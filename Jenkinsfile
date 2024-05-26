@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+
+    tools {
+        git 'Default' // Ensure 'Default' matches the name of your Git installation
+    }
+
     environment {
         // Define any environment variables here
         DOCKER_IMAGE = 'your-docker-image'
