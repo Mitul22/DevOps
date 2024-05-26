@@ -12,12 +12,12 @@ pipeline {
         DOCKER_IMAGE = 'your-docker-image'
     }
 
-    stages {
-        stage('Checkout') {
-            steps {
-                git url: 'https://github.com/Mitul22/spring-boot-jenkins-pipeline.git', branch: 'main'
-            }
-        }
+    // stages {
+    //     stage('Checkout') {
+    //         steps {
+    //             git url: 'https://github.com/Mitul22/spring-boot-jenkins-pipeline.git', branch: 'main'
+    //         }
+    //     }
         stage('Build') {
             steps {
                 script {
@@ -29,62 +29,62 @@ pipeline {
             }
         }
 
-        stage('Test') {
-            steps {
-                script {
-                    // Run unit tests
-                    sh 'mvn test'
-                }
-            }
-        }
+    //     stage('Test') {
+    //         steps {
+    //             script {
+    //                 // Run unit tests
+    //                 sh 'mvn test'
+    //             }
+    //         }
+    //     }
 
-        stage('Code Quality Analysis') {
-            steps {
-                script {
-                    // Run SonarQube analysis
-                    withSonarQubeEnv('SonarQube') {
-                        sh 'mvn sonar:sonar'
-                    }
-                }
-            }
-        }
+    //     stage('Code Quality Analysis') {
+    //         steps {
+    //             script {
+    //                 // Run SonarQube analysis
+    //                 withSonarQubeEnv('SonarQube') {
+    //                     sh 'mvn sonar:sonar'
+    //                 }
+    //             }
+    //         }
+    //     }
 
-        stage('Deploy to Staging') {
-            steps {
-                script {
-                    // Example using Docker Compose
-                    sh 'docker-compose -f docker-compose.staging.yml up -d'
-                }
-            }
-        }
+    //     stage('Deploy to Staging') {
+    //         steps {
+    //             script {
+    //                 // Example using Docker Compose
+    //                 sh 'docker-compose -f docker-compose.staging.yml up -d'
+    //             }
+    //         }
+    //     }
 
-        stage('Release to Production') {
-            steps {
-                script {
-                    // Example using Docker Compose
-                    sh 'docker-compose -f docker-compose.prod.yml up -d'
-                }
-            }
-        }
+    //     stage('Release to Production') {
+    //         steps {
+    //             script {
+    //                 // Example using Docker Compose
+    //                 sh 'docker-compose -f docker-compose.prod.yml up -d'
+    //             }
+    //         }
+    //     }
 
-        stage('Monitoring and Alerting') {
-            steps {
-                script {
-                    // Integrate monitoring and alerting
-                    // This could be a script or a call to a monitoring tool API
-                    // Example with Datadog:
-                    sh 'datadog-agent status'
-                }
-            }
-        }
-    }
+    //     stage('Monitoring and Alerting') {
+    //         steps {
+    //             script {
+    //                 // Integrate monitoring and alerting
+    //                 // This could be a script or a call to a monitoring tool API
+    //                 // Example with Datadog:
+    //                 sh 'datadog-agent status'
+    //             }
+    //         }
+    //     }
+    // }
 
-    post {
-        always {
-            // Always send notifications
-            mail to: 'mitultandon2000@gmail.com',
-                 subject: "Pipeline ${currentBuild.fullDisplayName}",
-                 body: "Pipeline ${currentBuild.fullDisplayName} completed. Status: ${currentBuild.currentResult}"
-        }
-    }
+    // post {
+    //     always {
+    //         // Always send notifications
+    //         mail to: 'mitultandon2000@gmail.com',
+    //              subject: "Pipeline ${currentBuild.fullDisplayName}",
+    //              body: "Pipeline ${currentBuild.fullDisplayName} completed. Status: ${currentBuild.currentResult}"
+    //     }
+    // }
 }
