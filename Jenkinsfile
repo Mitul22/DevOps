@@ -5,6 +5,7 @@ pipeline {
         DOCKER_IMAGE = "yourdockerhubusername/spring-boot-app"
         SONARQUBE_SERVER = "SonarQubeServer"
         MAVEN_HOME = tool name: 'Maven 3.6.3', type: 'hudson.tasks.Maven$MavenInstallation'
+        PATH = "${env.MAVEN_HOME}/bin:${env.PATH}"
     }
 
     stages {
