@@ -3,7 +3,7 @@ pipeline {
 
 
     tools {
-        git 'Default' // Ensure 'Default' matches the name of your Git installation
+        git 'Git' // Ensure 'Default' matches the name of your Git installation
     }
 
     environment {
