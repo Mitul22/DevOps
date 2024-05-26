@@ -17,6 +17,7 @@ pipeline {
             steps {
                 git url: 'https://github.com/Mitul22/spring-boot-jenkins-pipeline.git', branch: 'main'
             }
+        }
         stage('Build') {
             steps {
                 script {
