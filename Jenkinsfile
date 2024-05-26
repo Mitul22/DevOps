@@ -1,44 +1,34 @@
 pipeline {
     agent any
 
-    environment {
-        // Define environment variables if needed
-        DOCKER_IMAGE = "yourdockerhubusername/spring-boot-app"
-        SONARQUBE_SERVER = "SonarQubeServer"
-    }
-
     stages {
         stage('Build') {
             steps {
                 script {
-                    sh 'mvn clean package'
-                    archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
+                    // Building the project and creating an artifact (e.g., JAR file)
+                    sh 'mvn clean package'  // Adjust this command according to your build tool
                 }
+                // Archive the build artifact for future stages
+                archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: false
             }
         }
 
         stage('Test') {
             steps {
                 script {
-                    sh 'mvn test'
+                    // Running automated tests
+                    sh 'mvn test'  // Adjust this command according to your testing framework
                 }
+                // Publish test results
+                junit '**/target/surefire-reports/*.xml'
             }
         }
 
         stage('Code Quality Analysis') {
             steps {
                 script {
-                    withSonarQubeEnv('SonarQubeServer') {
-                        sh 'mvn sonar:sonar'
-                    }
-                }
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    sh "docker build -t ${DOCKER_IMAGE}:${env.BUILD_ID} ."
+                    // Running code quality analysis
+                    sh 'mvn sonar:sonar'  // Adjust this command according to your code quality tool
                 }
             }
         }
@@ -46,16 +36,18 @@ pipeline {
         stage('Deploy to Staging') {
             steps {
                 script {
-                    sh "docker run -d -p 8080:8080 ${DOCKER_IMAGE}:${env.BUILD_ID}"
+                    // Deploying to a test environment
+                    sh 'docker-compose up -d'  // Adjust this command according to your deployment tool
                 }
             }
         }
 
         stage('Release to Production') {
             steps {
-                input message: 'Deploy to Production?', ok: 'Deploy'
+                input message: 'Promote to production?', ok: 'Release'
                 script {
-                    sh "docker run -d -p 80:8080 ${DOCKER_IMAGE}:${env.BUILD_ID}"
+                    // Releasing to the production environment
+                    sh 'aws deploy create-deployment --application-name my-app --deployment-group-name my-deployment-group --revision file://target/my-app.jar'  // Adjust this command according to your release tool
                 }
             }
         }
@@ -63,10 +55,19 @@ pipeline {
         stage('Monitoring and Alerting') {
             steps {
                 script {
-                    // Assuming Datadog is used for monitoring
-                    sh 'curl -X POST "https://api.datadoghq.com/api/v1/monitor?api_key=YOUR_DATADOG_API_KEY" -H "Content-Type: application/json" -d @datadog_monitor.json'
+                    // Setting up monitoring and alerting
+                    sh 'curl -X POST "https://api.datadoghq.com/api/v1/check_run?api_key=${DATADOG_API_KEY}" -d "{ \"check\": \"app.monitoring\", \"host_name\": \"my-app\", \"status\": \"0\" }"'  // Adjust this command according to your monitoring tool
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
