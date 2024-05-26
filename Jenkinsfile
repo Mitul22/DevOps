@@ -1,9 +1,5 @@
 pipeline {
     agent any
-    options {
-        // Specify the Git tool to use
-        gitTool 'git'
-    }
 
     stages {
         stage('Build') {
