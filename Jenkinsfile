@@ -2,17 +2,29 @@ pipeline {
     agent any
 
     environment {
-        // Define environment variables if needed
+        // Define environment variables
         DOCKER_IMAGE = "yourdockerhubusername/spring-boot-app"
         SONARQUBE_SERVER = "SonarQubeServer"
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    checkout scm
+                }
+            }
+        }
+
         stage('Build') {
             steps {
                 script {
-                    sh 'mvn clean package'
-                    archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
+                    try {
+                        sh 'mvn clean package'
+                        archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
+                    } catch (Exception e) {
+                        error "Build stage failed: ${e.message}"
+                    }
                 }
             }
         }
@@ -20,7 +32,11 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    sh 'mvn test'
+                    try {
+                        sh 'mvn test'
+                    } catch (Exception e) {
+                        error "Test stage failed: ${e.message}"
+                    }
                 }
             }
         }
@@ -28,8 +44,12 @@ pipeline {
         stage('Code Quality Analysis') {
             steps {
                 script {
-                    withSonarQubeEnv('SonarQubeServer') {
-                        sh 'mvn sonar:sonar'
+                    try {
+                        withSonarQubeEnv('SonarQubeServer') {
+                            sh 'mvn sonar:sonar'
+                        }
+                    } catch (Exception e) {
+                        error "Code Quality Analysis stage failed: ${e.message}"
                     }
                 }
             }
@@ -38,7 +58,11 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t ${DOCKER_IMAGE}:${env.BUILD_ID} ."
+                    try {
+                        sh "docker build -t ${DOCKER_IMAGE}:${env.BUILD_ID} ."
+                    } catch (Exception e) {
+                        error "Build Docker Image stage failed: ${e.message}"
+                    }
                 }
             }
         }
@@ -46,7 +70,11 @@ pipeline {
         stage('Deploy to Staging') {
             steps {
                 script {
-                    sh "docker run -d -p 8080:8080 ${DOCKER_IMAGE}:${env.BUILD_ID}"
+                    try {
+                        sh "docker run -d -p 8080:8080 ${DOCKER_IMAGE}:${env.BUILD_ID}"
+                    } catch (Exception e) {
+                        error "Deploy to Staging stage failed: ${e.message}"
+                    }
                 }
             }
         }
@@ -55,7 +83,11 @@ pipeline {
             steps {
                 input message: 'Deploy to Production?', ok: 'Deploy'
                 script {
-                    sh "docker run -d -p 80:8080 ${DOCKER_IMAGE}:${env.BUILD_ID}"
+                    try {
+                        sh "docker run -d -p 80:8080 ${DOCKER_IMAGE}:${env.BUILD_ID}"
+                    } catch (Exception e) {
+                        error "Release to Production stage failed: ${e.message}"
+                    }
                 }
             }
         }
@@ -63,10 +95,20 @@ pipeline {
         stage('Monitoring and Alerting') {
             steps {
                 script {
-                    // Assuming Datadog is used for monitoring
-                    sh 'curl -X POST "https://api.datadoghq.com/api/v1/monitor?api_key=YOUR_DATADOG_API_KEY" -H "Content-Type: application/json" -d @datadog_monitor.json'
+                    try {
+                        // Assuming Datadog is used for monitoring
+                        sh 'curl -X POST "https://api.datadoghq.com/api/v1/monitor?api_key=YOUR_DATADOG_API_KEY" -H "Content-Type: application/json" -d @datadog_monitor.json'
+                    } catch (Exception e) {
+                        error "Monitoring and Alerting stage failed: ${e.message}"
+                    }
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
         }
     }
 }
