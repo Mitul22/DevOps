@@ -4,7 +4,7 @@ pipeline {
     tools {
         // Specify the Git and Maven installations
         git 'git'
-        maven 'maven'
+        maven 'Maven'
     }
 
     stages {
