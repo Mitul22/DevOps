@@ -3,7 +3,7 @@ pipeline {
 
     tools {
         // Specify the Git and Maven installations
-        git 'git'
+        git 'Git'
         maven 'Maven'
     }
 
