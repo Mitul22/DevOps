@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     environment {
-        // Define environment variables
         DOCKER_IMAGE = "yourdockerhubusername/spring-boot-app"
         SONARQUBE_SERVER = "SonarQubeServer"
+        MAVEN_HOME = tool name: 'Maven 3.6.3', type: 'hudson.tasks.Maven$MavenInstallation'
     }
 
     stages {
@@ -20,7 +20,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        sh 'mvn clean package'
+                        sh "${MAVEN_HOME}/bin/mvn clean package"
                         archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
                     } catch (Exception e) {
                         error "Build stage failed: ${e.message}"
@@ -33,7 +33,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        sh 'mvn test'
+                        sh "${MAVEN_HOME}/bin/mvn test"
                     } catch (Exception e) {
                         error "Test stage failed: ${e.message}"
                     }
@@ -46,7 +46,7 @@ pipeline {
                 script {
                     try {
                         withSonarQubeEnv('SonarQubeServer') {
-                            sh 'mvn sonar:sonar'
+                            sh "${MAVEN_HOME}/bin/mvn sonar:sonar"
                         }
                     } catch (Exception e) {
                         error "Code Quality Analysis stage failed: ${e.message}"
