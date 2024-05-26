@@ -11,7 +11,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Checkout the code from Git repository
-                git branch: 'main', credentialsId: 'your-credentials-id', url: 'https://github.com/Mitul22/spring-boot-jenkins-pipeline.git'
+                git branch: 'main', credentialsId: 'Mitul22', url: 'https://github.com/Mitul22/spring-boot-jenkins-pipeline.git'
             }
         }
 
