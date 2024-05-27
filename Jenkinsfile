@@ -2,11 +2,6 @@ pipeline {
     agent any
 
     stages {
-        stage('Checkout') {
-            steps {
-                git 'https://github.com/Mitul22/spring-boot-jenkins-pipeline.git'
-            }
-        }
         stage('Build') {
             steps {
                 script {
