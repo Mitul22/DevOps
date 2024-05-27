@@ -2,48 +2,48 @@ pipeline {
     agent any
 
     stages {
+        // stage('Checkout') {
+        //     steps {
+        //         // Clone the repository
+        //         git 'https://your-repo-url.git'
+        //     }
+        // }
+
         stage('Build') {
             steps {
-                script {
-                    sh 'npm install'
-                    sh 'docker build -t nodejs-app .'
-                }
+                sh 'brew install git'
+                // Build the project using Maven
+                sh 'mvn clean install'
             }
         }
+
         stage('Test') {
             steps {
-                script {
-                    sh 'npm test'
-                }
+                // Run the tests using Maven
+                sh 'mvn test'
             }
         }
-        stage('Code Quality Analysis') {
-            steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh 'sonar-scanner'
-                }
-            }
-        }
+
         stage('Deploy') {
             steps {
-                script {
-                    sh 'docker-compose up -d'
-                }
+                // Deploy the application
+                sh 'mvn deploy'
             }
         }
-        stage('Release') {
-            steps {
-                script {
-                    sh 'eb deploy'
-                }
-            }
+    }
+
+    post {
+        always {
+            // Archive the build artifacts
+            archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
         }
-        stage('Monitoring') {
-            steps {
-                script {
-                    sh 'datadog-agent status'
-                }
-            }
+        success {
+            // Notify success (this could be an email, Slack message, etc.)
+            echo 'Build succeeded!'
+        }
+        failure {
+            // Notify failure (this could be an email, Slack message, etc.)
+            echo 'Build failed!'
         }
     }
 }
