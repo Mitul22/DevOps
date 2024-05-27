@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/yourusername/nodejs-app.git'
+                git 'https://github.com/Mitul22/spring-boot-jenkins-pipeline.git'
             }
         }
         stage('Build') {
