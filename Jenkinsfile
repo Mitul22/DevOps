@@ -2,10 +2,11 @@ pipeline {
     agent any
 
     environment {
-        BUILD_DIR = 'dist'
+        PROJECT_DIR = 'Document/spring-boot-jenkins-pipeline'
+        BUILD_DIR = "${PROJECT_DIR}/build"
         DEPLOY_SERVER = 'user@deploy-server.com'
         DEPLOY_PATH = '/path/to/deploy'
-        VERSION_FILE = 'VERSION'
+        VERSION_FILE = "${PROJECT_DIR}/VERSION"
         APP_NAME = 'myapp'
     }
 
@@ -18,7 +19,7 @@ pipeline {
                         rm -rf ${BUILD_DIR}
                         mkdir -p ${BUILD_DIR}
                         echo "Building application..."
-                        cp -r src/* ${BUILD_DIR}/
+                        cp -r ${PROJECT_DIR}/src/* ${BUILD_DIR}/
                         echo "Build complete."
                     '''
                 }
@@ -31,7 +32,7 @@ pipeline {
                     // Run tests
                     sh '''
                         echo "Running tests..."
-                        pytest tests/
+                        pytest ${PROJECT_DIR}/tests/
                         echo "Tests completed."
                     '''
                 }
