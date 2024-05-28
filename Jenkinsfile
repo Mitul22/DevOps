@@ -1,47 +1,63 @@
 pipeline {
     agent any
 
-    stages {
-        // stage('Checkout') {
-        //     steps {
-        //         // Clone the repository
-        //         git 'https://your-repo-url.git'
-        //     }
-        // }
+    environment {
+        // Define any environment variables you need here
+        BUILD_ARTIFACT = 'target/myapp.jar'
+        DEPLOY_SERVER = 'user@deploy-server.com'
+        DEPLOY_PATH = '/path/to/deploy'
+    }
 
+    stages {
         stage('Build') {
             steps {
-                
+                script {
+                    // Use Maven to clean and build the project
+                    sh 'mvn clean package'
+                    archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: false
+                }
             }
         }
 
         stage('Test') {
             steps {
-                // Run the tests using Maven
-                sh 'mvn test'
+                script {
+                    // Running tests using Maven
+                    sh 'mvn test'
+                    junit '**/target/surefire-reports/*.xml'
+                }
             }
         }
 
         stage('Deploy') {
             steps {
-                // Deploy the application
-                sh 'mvn deploy'
+                script {
+                    // Deploy the built JAR file to a remote server
+                    sh """
+                        scp ${BUILD_ARTIFACT} ${DEPLOY_SERVER}:${DEPLOY_PATH}
+                    """
+                }
+            }
+        }
+
+        stage('Release') {
+            steps {
+                script {
+                    // Tagging the release in Git
+                    def version = sh(script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
+                    sh "git tag -a v${version} -m 'Release version ${version}'"
+                    sh "git push origin v${version}"
+                }
             }
         }
     }
 
     post {
-        always {
-            // Archive the build artifacts
-            archiveArtifacts artifacts: '**/target/*.jar', allowEmptyArchive: true
-        }
         success {
-            // Notify success (this could be an email, Slack message, etc.)
-            echo 'Build succeeded!'
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            // Notify failure (this could be an email, Slack message, etc.)
-            echo 'Build failed!'
+            echo 'Pipeline failed!'
         }
     }
 }
