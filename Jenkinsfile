@@ -4,8 +4,14 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                // Clean and build the project using Maven
-                sh 'mvn clean package'
+                // Build the Docker image
+                sh 'docker build -t devops-app .'
+            }
+        }
+        stage('Test') {
+            steps {
+                // Run the tests in the Docker container
+                sh 'docker run --rm devops-app npm test'
             }
         }
     }
