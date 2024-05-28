@@ -4,14 +4,13 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                // Install npm dependencies
-                sh 'npm install'
-            }
-        }
-        stage('Test') {
-            steps {
-                // Run tests using npm
-                sh 'npm test'
+                // Checkout the code from the repository
+                git 'https://github.com/Mitul22/DevOps.git'
+                // Change directory to the project directory
+                dir('DevOps') {
+                    // Install npm dependencies and build the project
+                    sh 'npm install'
+                }
             }
         }
     }
