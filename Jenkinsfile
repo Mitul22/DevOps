@@ -3,23 +3,25 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'openjdk:11'
-        MAVEN_HOME = tool name: 'Maven', type: 'maven'
-        APP_NAME = 'myapp'
+        DOCKERFILE = 'Dockerfile'
+        APP_NAME = 'spring-boot-app'
         DEPLOY_SERVER = 'user@deploy-server.com'
         DEPLOY_PATH = '/path/to/deploy'
         EMAIL_ADDRESS = 'mitultandon2000@gmail.com'
     }
 
     stages {
-        stage('Build') {
+        stage('Checkout') {
             steps {
                 // Checkout the repository
                 checkout scm
-                
-                // Build the project using Maven
-                withMaven(maven: MAVEN_HOME, mavenSettingsConfig: 'your-maven-settings') {
-                    sh 'mvn clean package'
-                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                // Build the Spring Boot application
+                sh 'mvn clean package -DskipTests=true'
             }
         }
 
@@ -32,26 +34,15 @@ pipeline {
 
         stage('Package') {
             steps {
-                // Package the application into a Docker image
-                echo 'Packaging application...'
-                sh "docker build -t ${APP_NAME} ."
+                // Build the Docker image
+                sh "docker build -t ${APP_NAME} -f ${DOCKERFILE} ."
             }
         }
 
         stage('Deploy') {
             steps {
                 // Deploy the Docker image to a remote server
-                echo 'Deploying application...'
                 sh "docker save ${APP_NAME} | ssh ${DEPLOY_SERVER} 'docker load'"
-            }
-        }
-
-        stage('Release') {
-            steps {
-                // Tag the release in Git (if applicable)
-                echo 'Tagging release...'
-                sh "git tag -a v1.0 -m 'Release version 1.0'"
-                sh 'git push origin v1.0'
             }
         }
     }
