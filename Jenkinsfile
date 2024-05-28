@@ -2,13 +2,14 @@ pipeline {
     agent any
 
     environment {
-        REPO_URL = 'https://github.com/Mitul22/spring-boot-jenkins-pipeline.git'
+        REPO_URL = 'https://github.com/yourusername/your-repo.git'
         REPO_BRANCH = 'main'
         BUILD_DIR = 'build'
         DEPLOY_SERVER = 'user@deploy-server.com'
         DEPLOY_PATH = '/path/to/deploy'
         VERSION_FILE = 'VERSION'
         APP_NAME = 'myapp'
+        EMAIL_ADDRESS = 'mitultandon2000@gmail.com'
     }
 
     stages {
@@ -93,9 +94,19 @@ pipeline {
     post {
         success {
             echo 'Pipeline completed successfully!'
+            emailext (
+                subject: "Jenkins Build Success - ${APP_NAME}",
+                body: "Your Jenkins build for ${APP_NAME} was successful!",
+                to: "${EMAIL_ADDRESS}"
+            )
         }
         failure {
             echo 'Pipeline failed!'
+            emailext (
+                subject: "Jenkins Build Failure - ${APP_NAME}",
+                body: "Your Jenkins build for ${APP_NAME} failed!",
+                to: "${EMAIL_ADDRESS}"
+            )
         }
     }
 }
