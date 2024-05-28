@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        REPO_URL = 'https://github.com/yourusername/your-repo.git'
+        REPO_URL = 'https://github.com/Mitul22/spring-boot-jenkins-pipeline.git'
         REPO_BRANCH = 'main'
         BUILD_DIR = 'build'
         DEPLOY_SERVER = 'user@deploy-server.com'
