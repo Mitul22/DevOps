@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'maven:3.6.3-jdk-11'
+            args '-v $HOME/.m2:/root/.m2'
+        }
+    }
 
     environment {
         DOCKER_IMAGE = 'openjdk:11'
@@ -20,28 +25,21 @@ pipeline {
 
         stage('Build') {
             steps {
-                // Build the Spring Boot application
+                // Build the Spring Boot application using Maven inside the Maven Docker container
                 sh 'mvn clean package -DskipTests=true'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                // Run tests (if applicable)
-                echo 'Running tests...'
             }
         }
 
         stage('Package') {
             steps {
-                // Build the Docker image
+                // Build the Docker image for the Spring Boot application using the Dockerfile
                 sh "docker build -t ${APP_NAME} -f ${DOCKERFILE} ."
             }
         }
 
         stage('Deploy') {
             steps {
-                // Deploy the Docker image to a remote server
+                // Deploy the Docker image to a remote server using SSH
                 sh "docker save ${APP_NAME} | ssh ${DEPLOY_SERVER} 'docker load'"
             }
         }
