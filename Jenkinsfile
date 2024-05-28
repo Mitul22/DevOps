@@ -4,14 +4,14 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                // Build the Docker image
-                sh 'docker build -t devops-app .'
+                // Install npm dependencies
+                sh 'npm install'
             }
         }
         stage('Test') {
             steps {
-                // Run the tests in the Docker container
-                sh 'docker run --rm devops-app npm test'
+                // Run tests using npm
+                sh 'npm test'
             }
         }
     }
