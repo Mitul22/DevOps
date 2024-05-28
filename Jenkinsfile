@@ -3,7 +3,11 @@ pipeline {
 
     environment {
         // Define any environment variables you need here
-        BUILD_ARTIFACT = 'target/myapp.jar'
+        BUILD_DIR = 'build'
+        SRC_DIR = 'src'
+        TEST_DIR = 'test'
+        MAIN_CLASS = 'com.example.Main'
+        BUILD_ARTIFACT = 'myapp.jar'
         DEPLOY_SERVER = 'user@deploy-server.com'
         DEPLOY_PATH = '/path/to/deploy'
     }
@@ -12,9 +16,13 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    // Use Maven to clean and build the project
-                    sh 'mvn clean package'
-                    archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: false
+                    // Clean and compile the project
+                    sh '''
+                        rm -rf ${BUILD_DIR}
+                        mkdir -p ${BUILD_DIR}/classes
+                        mkdir -p ${BUILD_DIR}/test-classes
+                        javac -d ${BUILD_DIR}/classes $(find ${SRC_DIR} -name "*.java")
+                    '''
                 }
             }
         }
@@ -22,9 +30,23 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Running tests using Maven
-                    sh 'mvn test'
-                    junit '**/target/surefire-reports/*.xml'
+                    // Compile and run tests
+                    sh '''
+                        javac -d ${BUILD_DIR}/test-classes -cp ${BUILD_DIR}/classes $(find ${TEST_DIR} -name "*.java")
+                        java -cp ${BUILD_DIR}/classes:${BUILD_DIR}/test-classes org.junit.runner.JUnitCore $(find ${TEST_DIR} -name "*Test.java" | sed 's|/|.|g' | sed 's|.java||g')
+                    '''
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                script {
+                    // Package the application into a JAR file
+                    sh '''
+                        jar cf ${BUILD_DIR}/${BUILD_ARTIFACT} -C ${BUILD_DIR}/classes .
+                    '''
+                    archiveArtifacts artifacts: "${BUILD_DIR}/${BUILD_ARTIFACT}", allowEmptyArchive: false
                 }
             }
         }
@@ -32,9 +54,9 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Deploy the built JAR file to a remote server
+                    // Deploy the JAR file to a remote server
                     sh """
-                        scp ${BUILD_ARTIFACT} ${DEPLOY_SERVER}:${DEPLOY_PATH}
+                        scp ${BUILD_DIR}/${BUILD_ARTIFACT} ${DEPLOY_SERVER}:${DEPLOY_PATH}
                     """
                 }
             }
@@ -44,7 +66,7 @@ pipeline {
             steps {
                 script {
                     // Tagging the release in Git
-                    def version = sh(script: "mvn help:evaluate -Dexpression=project.version -q -DforceStdout", returnStdout: true).trim()
+                    def version = sh(script: "cat VERSION", returnStdout: true).trim()
                     sh "git tag -a v${version} -m 'Release version ${version}'"
                     sh "git push origin v${version}"
                 }
