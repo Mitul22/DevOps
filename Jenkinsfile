@@ -11,7 +11,6 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh 'brew install git'
                 // Build the project using Maven
                 sh 'mvn clean install'
             }
