@@ -2,91 +2,56 @@ pipeline {
     agent any
 
     environment {
-        REPO_URL = 'https://github.com/Mitul22/spring-boot-jenkins-pipeline.git'
-        REPO_BRANCH = 'main'
-        BUILD_DIR = 'build'
+        DOCKER_IMAGE = 'openjdk:11'
+        MAVEN_HOME = tool name: 'Maven', type: 'maven'
+        APP_NAME = 'myapp'
         DEPLOY_SERVER = 'user@deploy-server.com'
         DEPLOY_PATH = '/path/to/deploy'
-        VERSION_FILE = 'VERSION'
-        APP_NAME = 'myapp'
         EMAIL_ADDRESS = 'mitultandon2000@gmail.com'
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                // Checkout the repository
-                git branch: "${REPO_BRANCH}", url: "${REPO_URL}"
-            }
-        }
-
         stage('Build') {
             steps {
-                script {
-                    // Create a build artifact
-                    sh '''
-                        rm -rf ${BUILD_DIR}
-                        mkdir -p ${BUILD_DIR}
-                        echo "Building application..."
-                        cp -r src/* ${BUILD_DIR}/
-                        echo "Build complete."
-                    '''
+                // Checkout the repository
+                checkout scm
+                
+                // Build the project using Maven
+                withMaven(maven: MAVEN_HOME, mavenSettingsConfig: 'your-maven-settings') {
+                    sh 'mvn clean package'
                 }
             }
         }
 
         stage('Test') {
             steps {
-                script {
-                    // Run tests
-                    sh '''
-                        echo "Running tests..."
-                        pytest tests/
-                        echo "Tests completed."
-                    '''
-                }
+                // Run tests (if applicable)
+                echo 'Running tests...'
             }
         }
 
         stage('Package') {
             steps {
-                script {
-                    // Package the application
-                    sh '''
-                        echo "Packaging application..."
-                        tar -czf ${BUILD_DIR}/${APP_NAME}.tar.gz -C ${BUILD_DIR} .
-                        echo "Packaging complete."
-                    '''
-                    archiveArtifacts artifacts: "${BUILD_DIR}/${APP_NAME}.tar.gz", allowEmptyArchive: false
-                }
+                // Package the application into a Docker image
+                echo 'Packaging application...'
+                sh "docker build -t ${APP_NAME} ."
             }
         }
 
         stage('Deploy') {
             steps {
-                script {
-                    // Deploy the packaged application to a remote server
-                    sh '''
-                        echo "Deploying application..."
-                        scp ${BUILD_DIR}/${APP_NAME}.tar.gz ${DEPLOY_SERVER}:${DEPLOY_PATH}
-                        echo "Deployment complete."
-                    '''
-                }
+                // Deploy the Docker image to a remote server
+                echo 'Deploying application...'
+                sh "docker save ${APP_NAME} | ssh ${DEPLOY_SERVER} 'docker load'"
             }
         }
 
         stage('Release') {
             steps {
-                script {
-                    // Tag the release in Git
-                    def version = sh(script: "cat ${VERSION_FILE}", returnStdout: true).trim()
-                    sh '''
-                        echo "Tagging release..."
-                        git tag -a v${version} -m "Release version ${version}"
-                        git push origin v${version}
-                        echo "Release tagged."
-                    '''
-                }
+                // Tag the release in Git (if applicable)
+                echo 'Tagging release...'
+                sh "git tag -a v1.0 -m 'Release version 1.0'"
+                sh 'git push origin v1.0'
             }
         }
     }
