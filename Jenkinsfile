@@ -2,15 +2,23 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_DIR = 'Document/spring-boot-jenkins-pipeline'
-        BUILD_DIR = "${PROJECT_DIR}/build"
+        REPO_URL = 'https://github.com/yourusername/your-repo.git'
+        REPO_BRANCH = 'main'
+        BUILD_DIR = 'build'
         DEPLOY_SERVER = 'user@deploy-server.com'
         DEPLOY_PATH = '/path/to/deploy'
-        VERSION_FILE = "${PROJECT_DIR}/VERSION"
+        VERSION_FILE = 'VERSION'
         APP_NAME = 'myapp'
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the repository
+                git branch: "${REPO_BRANCH}", url: "${REPO_URL}"
+            }
+        }
+
         stage('Build') {
             steps {
                 script {
@@ -19,7 +27,7 @@ pipeline {
                         rm -rf ${BUILD_DIR}
                         mkdir -p ${BUILD_DIR}
                         echo "Building application..."
-                        cp -r ${PROJECT_DIR}/src/* ${BUILD_DIR}/
+                        cp -r src/* ${BUILD_DIR}/
                         echo "Build complete."
                     '''
                 }
@@ -32,7 +40,7 @@ pipeline {
                     // Run tests
                     sh '''
                         echo "Running tests..."
-                        pytest ${PROJECT_DIR}/tests/
+                        pytest tests/
                         echo "Tests completed."
                     '''
                 }
