@@ -8,43 +8,21 @@ pipeline {
     }
 
     tools {
-        // Install Maven from Jenkins Global Tool Configuration
-        maven 'Maven 3.9.7' // Ensure this matches the name configured in Global Tool Configuration
+        maven 'maven-3.9.7' // Ensure this matches the name configured in Global Tool Configuration
     }
 
     stages {
-        stage('Prepare Environment') {
-            steps {
-                script {
-                    // Ensure Maven is installed
-                    sh 'echo "Installing Maven 3.9.7..."'
-                    sh 'curl -o /tmp/apache-maven-3.9.7-bin.tar.gz https://downloads.apache.org/maven/maven-3/3.9.7/binaries/apache-maven-3.9.7-bin.tar.gz'
-                    sh 'tar xzf /tmp/apache-maven-3.9.7-bin.tar.gz -C /tmp'
-                    sh 'export M2_HOME=/tmp/apache-maven-3.9.7'
-                    sh 'export PATH=$M2_HOME/bin:$PATH'
-                }
-            }
-        }
-
         stage('Build') {
             steps {
                 echo 'Building...'
-                script {
-                    sh 'export M2_HOME=/tmp/apache-maven-3.9.7'
-                    sh 'export PATH=$M2_HOME/bin:$PATH'
-                    sh 'mvn clean package'
-                }
+                sh 'mvn clean package'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Testing...'
-                script {
-                    sh 'export M2_HOME=/tmp/apache-maven-3.9.7'
-                    sh 'export PATH=$M2_HOME/bin:$PATH'
-                    sh 'mvn test'
-                }
+                sh 'mvn test'
             }
         }
 
@@ -64,7 +42,7 @@ pipeline {
             steps {
                 echo 'Releasing...'
                 script {
-                    def version = sh(script: 'export M2_HOME=/tmp/apache-maven-3.9.7 && export PATH=$M2_HOME/bin:$PATH && mvn help:evaluate -Dexpression=project.version -q -DforceStdout', returnStdout: true).trim()
+                    def version = sh(script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout', returnStdout: true).trim()
                     sh "git tag -a v${version} -m 'Release version ${version}'"
                     sh 'git push --tags'
                 }
