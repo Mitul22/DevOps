@@ -2,73 +2,61 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'openjdk:11'
-        DOCKERFILE = 'Dockerfile'
-        APP_NAME = 'spring-boot-app'
-        DEPLOY_SERVER = 'user@deploy-server.com'
+        // Define any environment variables needed for the pipeline
+        DEPLOY_SERVER = 'your.deploy.server'
+        DEPLOY_USER = 'yourDeployUser'
         DEPLOY_PATH = '/path/to/deploy'
-        EMAIL_ADDRESS = 'mitultandon2000@gmail.com'
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                // Checkout the repository
-                checkout scm
-            }
-        }
-
         stage('Build') {
-            agent {
-                docker { 
-                    image 'maven:3.6.3-jdk-11'
-                    args '-v $HOME/.m2:/root/.m2'
-                }
-            }
             steps {
-                // Build the Spring Boot application using Maven inside the Maven Docker container
-                sh 'mvn clean package -DskipTests=true'
+                echo 'Building...'
+                sh 'mvn clean package'
             }
         }
 
         stage('Test') {
             steps {
-                // Run tests (if applicable)
-                echo 'Running tests...'
-            }
-        }
-
-        stage('Package') {
-            steps {
-                // Build the Docker image for the Spring Boot application using the Dockerfile
-                sh "docker build -t ${APP_NAME} -f ${DOCKERFILE} ."
+                echo 'Testing...'
+                sh 'mvn test'
             }
         }
 
         stage('Deploy') {
             steps {
-                // Deploy the Docker image to a remote server using SSH
-                sh "docker save ${APP_NAME} | ssh ${DEPLOY_SERVER} 'docker load'"
+                echo 'Deploying...'
+                sshagent(['your-ssh-credential-id']) {
+                    sh """
+                        scp target/your-app.jar ${DEPLOY_USER}@${DEPLOY_SERVER}:${DEPLOY_PATH}
+                        ssh ${DEPLOY_USER}@${DEPLOY_SERVER} 'systemctl restart your-app-service'
+                    """
+                }
+            }
+        }
+
+        stage('Release') {
+            steps {
+                echo 'Releasing...'
+                script {
+                    def version = sh(script: 'mvn help:evaluate -Dexpression=project.version -q -DforceStdout', returnStdout: true).trim()
+                    sh "git tag -a v${version} -m 'Release version ${version}'"
+                    sh 'git push --tags'
+                }
             }
         }
     }
 
     post {
+        always {
+            echo 'Cleaning up...'
+            cleanWs()
+        }
         success {
             echo 'Pipeline completed successfully!'
-            emailext (
-                subject: "Jenkins Build Success - ${APP_NAME}",
-                body: "Your Jenkins build for ${APP_NAME} was successful!",
-                to: "${EMAIL_ADDRESS}"
-            )
         }
         failure {
             echo 'Pipeline failed!'
-            emailext (
-                subject: "Jenkins Build Failure - ${APP_NAME}",
-                body: "Your Jenkins build for ${APP_NAME} failed!",
-                to: "${EMAIL_ADDRESS}"
-            )
         }
     }
 }
