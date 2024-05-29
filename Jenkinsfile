@@ -1,7 +1,7 @@
 pipeline {
     agent any
 
-    tools{
+    tools {
         nodejs 'npm'
     }
 
@@ -56,10 +56,8 @@ pipeline {
             }
         }
         stage('Release') {
-            //empty stage
-    }
-}
-
+            // Empty stage
+        }
     }
 
     post {
