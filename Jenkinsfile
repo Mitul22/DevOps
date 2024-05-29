@@ -26,7 +26,7 @@ pipeline {
             steps {
                 script {
                     // Ensure the directory containing the pom.xml is the current directory
-                    dir('path/to/your/project') { // Change this to the correct path if necessary
+                    dir('/Users/mitultandon/Documents/DevOps') { // Change this to the correct path if necessary
                         sh 'mvn test'
                     }
                 }
@@ -36,7 +36,7 @@ pipeline {
             steps {
                 script {
                     // Ensure the directory containing the pom.xml is the current directory
-                    dir('path/to/your/project') { // Change this to the correct path if necessary
+                    dir('/Users/mitultandon/Documents/DevOps') { // Change this to the correct path if necessary
                         echo 'Release stage: tagging repository and sending notifications'
                         sh 'git tag -a v${BUILD_NUMBER} -m "Release version ${BUILD_NUMBER}"'
                         sh 'git push origin v${BUILD_NUMBER}'
