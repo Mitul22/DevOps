@@ -2,13 +2,7 @@ pipeline {
     agent any
 
     tools {
-        maven 'mvn'  // Ensure Maven is installed and configured in Jenkins
-    }
-
-    environment {
-        REGISTRY = "your-docker-registry"
-        IMAGE_NAME = "your-image-name"
-        IMAGE_TAG = "latest"
+        maven 'Maven_3.8.1'  // Ensure Maven is configured in Jenkins
     }
 
     stages {
@@ -21,44 +15,32 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    // Run Maven build
-                    sh 'mvn clean install'
-                    
-                    // Build Docker image
-                    sh """
-                    docker build -t ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} .
-                    docker tag ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ${REGISTRY}/${IMAGE_NAME}:latest
-                    """
+                    // Ensure the directory containing the pom.xml is the current directory
+                    dir('path/to/your/project') { // Change this to the correct path if necessary
+                        sh 'mvn clean install'
+                    }
                 }
             }
         }
         stage('Test') {
             steps {
                 script {
-                    // Run Maven tests
-                    sh 'mvn test'
-                }
-            }
-        }
-        stage('Deploy') {
-            steps {
-                script {
-                    // Push Docker image to registry
-                    sh """
-                    docker login -u ${env.DOCKER_USERNAME} -p ${env.DOCKER_PASSWORD} ${REGISTRY}
-                    docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
-                    docker push ${REGISTRY}/${IMAGE_NAME}:latest
-                    """
+                    // Ensure the directory containing the pom.xml is the current directory
+                    dir('path/to/your/project') { // Change this to the correct path if necessary
+                        sh 'mvn test'
+                    }
                 }
             }
         }
         stage('Release') {
             steps {
                 script {
-                    // Perform release tasks
-                    echo 'Release stage: tagging repository and sending notifications'
-                    sh 'git tag -a v${IMAGE_TAG} -m "Release version ${IMAGE_TAG}"'
-                    sh 'git push origin v${IMAGE_TAG}'
+                    // Ensure the directory containing the pom.xml is the current directory
+                    dir('path/to/your/project') { // Change this to the correct path if necessary
+                        echo 'Release stage: tagging repository and sending notifications'
+                        sh 'git tag -a v${BUILD_NUMBER} -m "Release version ${BUILD_NUMBER}"'
+                        sh 'git push origin v${BUILD_NUMBER}'
+                    }
                 }
             }
         }
