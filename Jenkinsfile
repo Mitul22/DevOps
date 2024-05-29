@@ -56,7 +56,7 @@ pipeline {
             }
         }
         stage('Release') {
-            // empty stage 
+            //empty stage
     }
 }
 
