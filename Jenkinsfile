@@ -57,11 +57,13 @@ pipeline {
         }
         stage('Release') {
             steps {
-                script {
-                    sh "git tag -a v${BUILD_NUMBER} -m 'Release version ${BUILD_NUMBER}' && git push origin v${BUILD_NUMBER}"
+                withCredentials([usernamePassword(credentialsId: 'mitul', usernameVariable: 'Mitul22', passwordVariable: 'Mitul@22')]) {
+                    sh "git tag -a v${BUILD_NUMBER} -m 'Release version ${BUILD_NUMBER}'"
+                    sh "git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/yourusername/yourrepository.git v${BUILD_NUMBER}"
                 }
-            }
-        }
+    }
+}
+
     }
 
     post {
