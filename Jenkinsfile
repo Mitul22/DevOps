@@ -56,7 +56,10 @@ pipeline {
             }
         }
         stage('Release') {
-            // Empty stage
+            steps{
+                //release step
+            }
+            
         }
     }
 
