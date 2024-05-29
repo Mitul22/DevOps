@@ -58,14 +58,7 @@ pipeline {
         stage('Release') {
             steps {
                 script {
-                    // Perform release tasks
-                    echo 'Release stage: tagging repository and sending notifications'
-                    sh '''
-                    echo "Tagging the repository..."
-                    git tag -a v${BUILD_NUMBER} -m "Release version ${BUILD_NUMBER}"
-                    git push origin v${BUILD_NUMBER}
-                    # Add any other release commands here, like sending notifications
-                    '''
+                    sh "git tag -a v${BUILD_NUMBER} -m 'Release version ${BUILD_NUMBER}' && git push origin v${BUILD_NUMBER}"
                 }
             }
         }
