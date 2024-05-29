@@ -73,10 +73,14 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            emailext subject: "Pipeline Successful: ${currentBuild.fullDisplayName}",
+                      body: "Your pipeline ${currentBuild.fullDisplayName} completed successfully.",
+                      to: "mitultandon2000@gmail.com"
         }
         failure {
-            echo 'Pipeline failed!'
+            emailext subject: "Pipeline Failed: ${currentBuild.fullDisplayName}",
+                      body: "Your pipeline ${currentBuild.fullDisplayName} failed. Please check the console output for details.",
+                      to: "mitultandon2000@gmail.com"
         }
     }
 }
