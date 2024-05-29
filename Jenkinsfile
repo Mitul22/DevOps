@@ -57,7 +57,14 @@ pipeline {
         }
         stage('Release') {
             steps{
-                //release step
+                script{
+                    sh '''
+                    echo "Deploying the project..."
+                    # Add your deploy commands here
+                    # e.g., deploying to a server:
+                    # scp -r ./build user@server:/path/to/deploy
+                    '''
+                }
             }
             
         }
