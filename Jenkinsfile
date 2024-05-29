@@ -1,8 +1,8 @@
 pipeline {
     agent any
 
-    tools {
-        maven 'mvn'  // Ensure Maven is configured in Jenkins
+    tools{
+        node 'npm'
     }
 
     stages {
@@ -15,32 +15,57 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    // Ensure the directory containing the pom.xml is the current directory
-                    dir('path/to/your/project') { // Change this to the correct path if necessary
-                        sh 'mvn clean install'
-                    }
+                    // Run build commands here
+                    // Replace with actual build commands for your project
+                    sh '''
+                    echo "Building the project..."
+                    # Add your build commands here
+                    # e.g., if it's a Node.js project, you might use:
+                    # npm install
+                    # npm run build
+                    '''
                 }
             }
         }
         stage('Test') {
             steps {
                 script {
-                    // Ensure the directory containing the pom.xml is the current directory
-                    dir('/Users/mitultandon/Documents/DevOps') { // Change this to the correct path if necessary
-                        sh 'mvn test'
-                    }
+                    // Run test commands here
+                    // Replace with actual test commands for your project
+                    sh '''
+                    echo "Running tests..."
+                    # Add your test commands here
+                    # e.g., if it's a Node.js project, you might use:
+                    # npm test
+                    '''
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                script {
+                    // Run deploy commands here
+                    // Replace with actual deploy commands for your project
+                    sh '''
+                    echo "Deploying the project..."
+                    # Add your deploy commands here
+                    # e.g., deploying to a server:
+                    # scp -r ./build user@server:/path/to/deploy
+                    '''
                 }
             }
         }
         stage('Release') {
             steps {
                 script {
-                    // Ensure the directory containing the pom.xml is the current directory
-                    dir('/Users/mitultandon/Documents/DevOps') { // Change this to the correct path if necessary
-                        echo 'Release stage: tagging repository and sending notifications'
-                        sh 'git tag -a v${BUILD_NUMBER} -m "Release version ${BUILD_NUMBER}"'
-                        sh 'git push origin v${BUILD_NUMBER}'
-                    }
+                    // Perform release tasks
+                    echo 'Release stage: tagging repository and sending notifications'
+                    sh '''
+                    echo "Tagging the repository..."
+                    git tag -a v${BUILD_NUMBER} -m "Release version ${BUILD_NUMBER}"
+                    git push origin v${BUILD_NUMBER}
+                    # Add any other release commands here, like sending notifications
+                    '''
                 }
             }
         }
