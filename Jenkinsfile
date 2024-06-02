@@ -2,7 +2,6 @@ pipeline {
     agent any
     tools{
         maven 'mvn'
-        git 'git'
     }
     stages {
         stage('Build') {
